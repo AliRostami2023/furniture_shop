@@ -43,7 +43,7 @@ class ProductSerializer(serializers.ModelSerializer):
 		model = Product
 		fields = ['title', 'slug', 'category', 'final_price', 'discount', 'image',
 					 'gallery_product', 'rating', 'width', 'lenght', 'weight', 'color',
-					   'meterial', 'create_at', 'update_at']
+					   'meterial', 'comment_product', 'create_at', 'update_at']
 
 
 	def get_total_price(self, obj):

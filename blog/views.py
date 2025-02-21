@@ -15,7 +15,7 @@ class CategoryBlogViewSet(viewsets.ModelViewSet):
     def get_permission(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return super().get_permission()
+        return super().get_permissions()
     
     @method_decorator(cache_page(60 * 30))
     def list(self, request, *args, **kwargs):
@@ -36,7 +36,7 @@ class BlogViewSet(viewsets.ModelViewSet):
     def get_permission(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return super().get_permission()
+        return super().get_permissions()
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -72,7 +72,7 @@ class CommentBlogViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method in ["GET", "POST"]:
             return [permissions.IsAuthenticated()]
-        return super().get_permission()
+        return super().get_permissions()
 
     def get_queryset(self):
         return CommentBlog.objects.filter(blog__slug=self.kwargs['blog_slug']).select_related('user', 'blog', 'reply')

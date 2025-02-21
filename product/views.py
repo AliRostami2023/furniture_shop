@@ -20,7 +20,7 @@ class CategoryProductViewSet(viewsets.ModelViewSet):
     def get_permission(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return super().get_permission()
+        return super().get_permissions()
     
     @method_decorator(cache_page(60 * 30))
     def list(self, request, *args, **kwargs):
@@ -45,7 +45,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_permission(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return super().get_permission()
+        return super().get_permissions()
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -81,7 +81,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
             if self.request.method in ["GET", "POST"]:
                     return [permissions.IsAuthenticated()]
-            return super().get_permission()
+            return super().get_permissions()
 
     def get_queryset(self):
             return CommentProduct.objects.filter(product__slug=self.kwargs['product_slug']).select_related('user', 'product', 'reply')
