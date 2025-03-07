@@ -30,9 +30,6 @@ class Blog(CreateMixin, UpdateMixin):
     def __str__(self):
         return self.title
     
-    def image_tag(self):
-        return format_html('<img src = "{}" width=60% height=40px>'.format(self.image.url))
-    
     class Meta:
         verbose_name = 'مقاله'
         verbose_name_plural = 'مقالات'

@@ -70,7 +70,7 @@ class PasswordResetToken(CreateMixin):
 
 
     def is_valid(self):
-        return datetime.now() > self.created + timedelta(days=2) and not self.is_used
+        return datetime.now() > self.create_at + timedelta(days=2) and not self.is_used
     
     def __str__(self):
         return f"{self.user.full_name} - {self.token}"

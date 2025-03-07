@@ -8,7 +8,7 @@ class GalleryProductInline(admin.TabularInline):
 
 @admin.register(CategoryProduct)
 class CategoryProductAdmin(admin.ModelAdmin):
-    list_display = ['title', 'image_tag']
+    list_display = ['title', 'image']
 
 
 @admin.register(Product)

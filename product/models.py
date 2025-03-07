@@ -22,9 +22,6 @@ class CategoryProduct(CreateMixin, UpdateMixin):
         if not self.slug or (self.pk and CategoryProduct.objects.get(pk=self.pk).title != self.title):
             self.slug = slugify(self.title, allow_unicode=True)
         super().save(*args, **kwargs)
-
-    def image_tag(self):
-        return format_html('<img src = "{}" width=60% height=40px>'.format(self.image.url))
     
     class Meta:
         verbose_name = 'دسته بندی'
@@ -61,10 +58,6 @@ class Product(CreateMixin, UpdateMixin):
             total = (self.discount * self.price) / 100
             return int(self.price - total)
         return self.price
-    
-    def image_tag(self):
-        return format_html('<img src = "{}" width=60% height=40px>'.format(self.image.url))
-
     
     class Meta:
         verbose_name = 'محصول'

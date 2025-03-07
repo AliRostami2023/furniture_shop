@@ -9,7 +9,7 @@ class CategoryBlogAdmin(admin.ModelAdmin):
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'image_tag', 'content']
+    list_display = ['title', 'category', 'image', 'content']
     list_per_page = 20
     search_fields = ['title', 'category', 'content']
 
