@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import format_html
+from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 from core.models import CreateMixin, UpdateMixin
 from core.models import Image
@@ -14,6 +15,11 @@ class CategoryBlog(CreateMixin, UpdateMixin):
 
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs):
+        if not self.slug or (self.pk and CategoryBlog.objects.get(pk=self.pk).title != self.title):
+            self.slug = slugify(self.title, allow_unicode=True)
+        return super().save(*args, **kwargs)
     
     class Meta:
         verbose_name = 'دسته بندی'
@@ -29,6 +35,11 @@ class Blog(CreateMixin, UpdateMixin):
 
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs):
+        if not self.slug or (self.pk and Blog.objects.get(pk=self.pk).title != self.title):
+            self.slug = slugify(self.title, allow_unicode=True)
+        return super().save(*args, **kwargs)
     
     class Meta:
         verbose_name = 'مقاله'
@@ -50,3 +61,4 @@ class CommentBlog(CreateMixin):
         verbose_name = 'دیدگاه'
         verbose_name_plural = 'دیدگاه ها'
         ordering = ('-create_at',)
+        
