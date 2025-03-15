@@ -37,12 +37,12 @@ class ProductSerializer(serializers.ModelSerializer):
 	category = CategoryProductSerializer(source='category.title')
 	comment_product = CommentSerializer(many=True)
 	final_price = serializers.SerializerMethodField()
-	gallery_product = GalleryProductSerializer(many=True)
+	product_image = GalleryProductSerializer(many=True)
 
 	class Meta:
 		model = Product
 		fields = ['title', 'slug', 'category', 'final_price', 'discount', 'image',
-					 'gallery_product', 'rating', 'width', 'lenght', 'weight', 'color',
+					 'product_image', 'rating', 'width', 'lenght', 'weight', 'color',
 					   'meterial', 'comment_product', 'create_at', 'update_at']
 
 

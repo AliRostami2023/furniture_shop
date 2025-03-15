@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from .models import Order, OrderItem
 
@@ -12,29 +13,30 @@ class OrderItemSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['request'].user
 
-        order, created = Order.objects.get_or_create(
-            user=user,
-            status=Order.StatusOrder.pending
-        )
+        with transaction.atomic():
+            order, created = Order.objects.get_or_create(
+                user=user,
+                status=Order.StatusOrder.pending
+            )
 
-        product = validated_data['product']
-        order_item, created = OrderItem.objects.get_or_create(
-            order=order,
-            product=product,
-            defaults={
-                'price': product.price,
-                'quantity': validated_data.get('quantity', 1)
-            }
-        )
+            product = validated_data['product']
+            order_item, created = OrderItem.objects.get_or_create(
+                order=order,
+                product=product,
+                defaults={
+                    'price': product.price,
+                    'quantity': validated_data.get('quantity', 1)
+                }
+            )
 
-        if not created:
-            order_item.quantity += int(validated_data.get('quantity', 1))
-            order_item.save()
+            if not created:
+                order_item.quantity += int(validated_data.get('quantity', 1))
+                order_item.save()
 
-        order.total_price += product.price * int(validated_data.get('quantity', 1))
-        order.save()
+            order.total_price += product.price * int(validated_data.get('quantity', 1))
+            order.save()
 
-        return order_item
+            return order_item
 
     def destroy(self, instance):
         order = instance.order

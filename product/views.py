@@ -13,7 +13,7 @@ from .serializers import *
 
 class CategoryProductViewSet(viewsets.ModelViewSet):
     queryset = CategoryProduct.objects.select_related('image')
-    serializers_class = CategoryProductSerializer
+    serializer_class = CategoryProductSerializer
     permissions_classes = [permissions.IsAdminUser]
     lookup_field = 'slug'
 
@@ -33,7 +33,7 @@ class CategoryProductViewSet(viewsets.ModelViewSet):
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related('category', 'image')
-    serializers_class = EditProductSerializer
+    serializer_class = EditProductSerializer
     permissions_classes = [permissions.IsAdminUser]
     pagination_class = ProductPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
@@ -62,7 +62,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    serializers_class = CommentSerializer
+    serializer_class = CommentSerializer
     permissions_classes = [permissions.IsAdminUser]
     pagination_class = CommentProductPagination
 

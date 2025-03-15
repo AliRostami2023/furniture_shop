@@ -8,7 +8,7 @@ from .serializers import *
 
 class CategoryBlogViewSet(viewsets.ModelViewSet):
     queryset = CategoryBlog.objects.all()
-    serializers_class = CategoryBlogSerializers
+    serializer_class = CategoryBlogSerializers
     permissions_classes = [permissions.IsAdminUser]
     lookup_field = 'slug'
 
@@ -28,7 +28,7 @@ class CategoryBlogViewSet(viewsets.ModelViewSet):
 
 class BlogViewSet(viewsets.ModelViewSet):
     queryset = Blog.objects.select_related('category', 'image')
-    serializers_class = EditBlogSerializer
+    serializer_class = EditBlogSerializer
     permissions_classes = [permissions.IsAdminUser]
     pagination_class = BlogPagination
     lookup_field = 'slug'
@@ -54,7 +54,7 @@ class BlogViewSet(viewsets.ModelViewSet):
 
 
 class CommentBlogViewSet(viewsets.ModelViewSet):
-    serializers_class = CommentSerializer
+    serializer_class = CommentSerializer
     permissions_classes = [permissions.IsAdminUser]
     pagination_class = CommentBlogPagination
 
