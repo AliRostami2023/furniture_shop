@@ -16,7 +16,7 @@ class User(AbstractBaseUser, PermissionsMixin, CreateMixin, UpdateMixin):
     is_admin = models.BooleanField(default=False, verbose_name=_('ادمین'))
     
     USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['full_name', 'email']
 
     objects = UserManager()
 
