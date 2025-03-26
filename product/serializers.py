@@ -43,14 +43,14 @@ class GalleryProductSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category = CategoryProductSerializer()
     comment_product = CommentSerializer(many=True)
-    final_price = serializers.SerializerMethodField()
+    final_price = serializers.IntegerField()
     product_image = GalleryProductSerializer(many=True)
     image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
-            'title', 'slug', 'category', 'final_price', 'discount', 'image',
+            'id', 'title', 'slug', 'category', 'final_price', 'discount', 'image',
             'product_image', 'rating', 'width', 'lenght', 'weight', 'color',
             'meterial', 'comment_product', 'create_at', 'update_at'
         ]
@@ -60,15 +60,12 @@ class ProductSerializer(serializers.ModelSerializer):
             return obj.image.image.url if obj.image.image else None
         return None
 
-    def get_total_price(self, obj):
-        return obj.final_price()
-
 
 
 class EditProductSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Product
-		fields = ['title', 'category', 'price', 'image', 'discount', 'width', 'lenght',
+		fields = ['id', 'title', 'category', 'price', 'image', 'discount', 'width', 'lenght',
 					 'weight', 'color', 'meterial']
 
 

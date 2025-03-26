@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     "django_filters",
+    "debug_toolbar",
 ]
 
 AUTH_USER_MODEL = 'account.User'
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'furniture_store.urls'
@@ -224,3 +226,8 @@ CACHES = {
         }
     }
 }
+
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]

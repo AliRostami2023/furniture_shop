@@ -2,6 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from django.db.models import F, ExpressionWrapper, IntegerField
 from rest_framework import viewsets, permissions, generics, status
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -32,7 +33,13 @@ class CategoryProductViewSet(viewsets.ModelViewSet):
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related('category', 'image')
+    queryset = Product.objects.select_related(
+         'category', 'image').prefetch_related(
+              'comment_product', 'product_image').annotate(
+                   final_price=ExpressionWrapper(
+                   F('price') * (1 - F('discount') / 100),
+                   output_field=IntegerField()
+              ))
     serializer_class = EditProductSerializer
     permissions_classes = [permissions.IsAdminUser]
     pagination_class = ProductPagination
