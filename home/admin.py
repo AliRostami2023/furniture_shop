@@ -18,6 +18,11 @@ class AboutUsAdmin(admin.ModelAdmin):
     list_display = ['image_tag', 'content', 'create_at']
 
 
+@admin.register(Employees)
+class EmployeesAdmin(admin.ModelAdmin):
+    list_display = ['image_tag', 'full_name', 'position']
+
+
 @admin.register(SliderHome)
 class SliderHomeAdmin(admin.ModelAdmin):
     list_display = ['title', 'image_tag', 'url']

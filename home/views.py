@@ -47,6 +47,27 @@ class AboutUsViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
     
 
+class EmployeesViewSet(viewsets.ModelViewSet):
+    queryset = Employees.objects.all()
+    serializer_class = EmployeesSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+    
+
+    @method_decorator(cache_page(60 * 30))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @method_decorator(cache_page(60 * 30))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+
 class SliderHomeViewSet(viewsets.ModelViewSet):
     queryset = SliderHome.objects.all()
     serializer_class = SliderHomeSerializer

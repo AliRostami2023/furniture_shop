@@ -15,6 +15,12 @@ class AboutUsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class EmployeesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employees
+        fields = '__all__'
+
+
 class SliderHomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SliderHome

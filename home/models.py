@@ -36,6 +36,22 @@ class AboutUs(CreateMixin):
         verbose_name_plural = _('متن درباره ما')
 
 
+class Employees(models.Model):
+    full_name = models.CharField(_('نام و نام خانوادگی'), max_length=500)
+    image = models.ImageField(upload_to='images/employees', verbose_name=_('عکس'))
+    position = models.CharField(_('سمت'), max_length=300)
+
+    def __str__(self):
+        return f"{self.full_name} - {self.position}"
+    
+    class Meta:
+        verbose_name = _('مشخصات کارمند')
+        verbose_name_plural = _('مشخصات کارمندان')
+
+    def image_tag(self):
+        return format_html('<img src = "{}" width=60% height=40px>'.format(self.image.url))
+
+
 class SliderHome(models.Model):
     title = models.CharField(_('عنوان اسلایدر'), max_length=350)
     image = models.ImageField(upload_to='images/slider', verbose_name=_('تصویر'))

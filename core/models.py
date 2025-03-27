@@ -18,4 +18,7 @@ class UpdateMixin(models.Model):
 class Image(models.Model):
     image = models.ImageField(upload_to='images/', verbose_name=_('تصویر'))
 
-    
+    class Meta:
+        verbose_name = _('تصویر')
+        verbose_name_plural = _('تصاویر')
+
