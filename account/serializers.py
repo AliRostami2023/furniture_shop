@@ -129,6 +129,11 @@ class UserListSerializer(serializers.ModelSerializer):
         model = User
         fields = ['phone_number', 'full_name', 'email', 'last_login']
 
+        extra_kwargs = {
+            'phone_number': {'read_only': True},
+            'email': {'read_only': True},
+            'last_login': {'read_only': True},
+        }
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -136,4 +141,19 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = ['user', 'avatar', 'brithday', 'address', 'about_me']
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', None)
+
+        instance.avatar = validated_data.get('avatar', instance.avatar)
+        instance.birthday = validated_data.get('brithday', instance.brithday)
+        instance.address = validated_data.get('address', instance.address)
+        instance.about_me = validated_data.get('about_me', instance.about_me)
+        instance.save()
+
+        if user_data:
+            user_serializer = UserListSerializer(instance.user, data=user_data, partial=True)
+            if user_serializer.is_valid():
+                user_serializer.save()
+        return instance
