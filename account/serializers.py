@@ -10,6 +10,7 @@ User = get_user_model()
 
 class CreateUserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField()
+
     class Meta:
         model = User
         fields = ['full_name', 'phone_number', 'email', 'password', 'confirm_password']
@@ -126,7 +127,7 @@ class PasswordResetConfirmSerializers(serializers.Serializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['phone_number', 'full_name', 'email', 'last_login']
 
 
 
