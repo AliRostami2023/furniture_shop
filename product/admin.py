@@ -20,6 +20,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'image', 'category', 'price', 'width', 'lenght', 'weight', 'color', 'meterial']
     list_per_page = 20
     inlines = [GalleryProductInline]
+    prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(CommentProduct)
