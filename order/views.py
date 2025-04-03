@@ -1,4 +1,5 @@
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -50,13 +51,33 @@ class RemoveFromCartView(generics.DestroyAPIView):
     lookup_field = 'id'
 
     def perform_destroy(self, instance):
-        self.get_serializer().destroy(instance)
+        order = instance.order
+        super().perform_destroy(instance)
+
+        if not order.order_item.exists():
+            order.delete()
 
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"detail": _("آیتم با موفقیت از سبد خرید حذف شد.")}, status=status.HTTP_200_OK)
+    
+
+class ClearCartView(generics.DestroyAPIView):
+    """ حذف کامل سبد خرید"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        with transaction.atomic():
+            order = Order.objects.select_for_update().filter(user=user, status=Order.StatusOrder.pending).first()
+            if not order:
+                return Response({"detail": _("سبد خریدی یافت نشد.")}, status.HTTP_404_NOT_FOUND)
+
+            order.delete()
+            return Response({"detail": _("سبد خرید شما با موفقیت حذف شد.")}, status.HTTP_200_OK)
 
 
 class UserOrderListView(generics.ListAPIView):

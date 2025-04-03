@@ -6,6 +6,7 @@ class DetailInline(admin.TabularInline):
     model = OrderItem
 
 
+@admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'status', 'total_price', 'is_paid']
     list_filter = ['is_paid', 'status']
@@ -15,6 +16,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [DetailInline]
 
 
+@admin.register(OrderItem)
 class OrderDetailAdmin(admin.ModelAdmin):
     list_display = ['order', 'product', 'price', 'quantity']
     list_per_page = 20

@@ -31,14 +31,16 @@ class Order(models.Model):
     address = models.CharField(max_length=300, verbose_name=_('آدرس'))
 
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.status}"
+        return f"{self.user.full_name} - {self.status}"
 
-    def calculate_total_price(self):
+    def get_total_price(self):
         total = self.order_item.aggregate(total_price=models.Sum(models.F('price') * models.F('quantity')))['total_price']
         return total
 
     def save(self, *args, **kwargs):
-        self.total_price = self.calculate_total_price()
+        self.total_price = self.get_total_price()
+        if self.total_price is None:
+            self.total_price = 0
         super().save(*args, **kwargs)
 
     class Meta:

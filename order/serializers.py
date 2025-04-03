@@ -6,7 +6,7 @@ from .models import Order, OrderItem
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'price', 'quantity']
+        fields = ['id', 'order', 'product', 'price', 'quantity']
         read_only_fields = ['price']
 
 
@@ -16,7 +16,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             order, created = Order.objects.get_or_create(
                 user=user,
-                status=Order.StatusOrder.pending
+                status=Order.StatusOrder.pending,
+                defaults={'total_price': 0}
             )
 
             product = validated_data['product']
@@ -47,16 +48,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = OrderItemSerializer(many=True, read_only=True)
+    order_item = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = [
             'id', 'user', 'status', 'total_price', 'payment_date', 'is_paid', 'first_name', 'last_name',
-            'email', 'phone_number', 'state', 'city', 'zip_code', 'address', 'order_items'
+            'email', 'phone_number', 'state', 'city', 'zip_code', 'address', 'order_item'
         ]
         read_only_fields = ['user', 'status', 'total_price', 'payment_date', 'is_paid'] 
 
-    def total_price_order(self, obj):
-        return obj.calculate_total_price()
+    def total_price(self, obj):
+        return obj.get_total_price()
