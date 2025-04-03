@@ -73,11 +73,11 @@ class PasswordResetRequestSerializers(serializers.Serializer):
         user = User.objects.get(email=validated_data['email'])
         reset_token = PasswordResetToken.objects.create(user=user)
 
-        reset_link = f"{self.context['request'].build_absolute_uri(reverse_lazy('password-reset', kwargs={'token':str(reset_token.token)}))}"
+        reset_link = f"{self.context['request'].build_absolute_uri(reverse_lazy('auth:password-reset', kwargs={'token':str(reset_token.token)}))}"
 
         send_mail(
             subject= _('درخواست تغییر کلمه عبور'),
-            message= _(f"برای تغییر کلمه عبور روی لینک کلیک کنید {reset_link}"),
+            message= _(f".برای تغییر کلمه عبور روی لینک زیر کلیک کنید {reset_link}"),
             from_email= 'example@gmail.com',
             recipient_list= [user.email],
             fail_silently= False
