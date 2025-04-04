@@ -25,7 +25,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
                 order=order,
                 product=product,
                 defaults={
-                    'price': product.price,
+                    'price': product.final_price(),
                     'quantity': validated_data.get('quantity', 1)
                 }
             )
@@ -34,14 +34,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
                 order_item.quantity += int(validated_data.get('quantity', 1))
                 order_item.save()
 
-            order.total_price += product.price * int(validated_data.get('quantity', 1))
+            order.total_price += product.final_price() * int(validated_data.get('quantity', 1))
             order.save()
 
             return order_item
 
     def destroy(self, instance):
         order = instance.order
-        order.total_price -= instance.price * instance.quantity
+        order.total_price -= instance.final_price() * instance.quantity
         order.save()
         instance.delete()
 
