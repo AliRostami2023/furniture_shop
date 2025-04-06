@@ -12,7 +12,7 @@ class CreateUserViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = CreateUserSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data).data
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"پیغام": "ثبت نام شما با موفقیت انجام شد"}, status.HTTP_201_CREATED)

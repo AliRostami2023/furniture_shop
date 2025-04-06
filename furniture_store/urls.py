@@ -19,12 +19,13 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from debug_toolbar.toolbar import debug_toolbar_urls
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include('home.urls', namespace='home')),
-    path("", include('product.urls', namespace='product')),
-    path("", include('blog.urls', namespace='blog')),
-    path("", include('account.urls', namespace='auth')),
+    path("products/", include('product.urls', namespace='product')),
+    path("blog/", include('blog.urls', namespace='blog')),
+    path("auth/", include('account.urls', namespace='auth')),
     path("cart/", include('order.urls', namespace='order')),
     
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

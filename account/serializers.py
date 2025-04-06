@@ -1,5 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.core.mail import send_mail
 from django.urls import reverse_lazy
 from rest_framework import serializers
@@ -16,31 +17,23 @@ class CreateUserSerializer(serializers.ModelSerializer):
         fields = ['full_name', 'phone_number', 'email', 'password', 'confirm_password']
 
         extra_kwargs = {
-            'password': {'required': True, 'read_only': True},
-            'confirm_password': {'required': True, 'read_only': True},
+            'password': {'required': True, 'write_only': True},
+            'confirm_password': {'required': True, 'write_only': True},
             'phone_number': {'required': True},
             'email': {'required': True},
             'full_name': {'required': True},
         }
 
-    def validate_phone_number(self, attrs):
-        phone_number = attrs.get('phone_number')
-
-        user = User.objects.filter(phone_number=phone_number).exists()
-
-        if user:
+    def validate_phone_number(self, phone_number):
+        if User.objects.filter(phone_number=phone_number).exists():
             raise serializers.ValidationError(_('کاربری در گذشته با این شماره تلفن ثبت نام کرده است!!!'))
-        return user
+        return phone_number
     
 
-    def validate_email(self, attrs):
-        email = attrs.get('email')
-
-        user = User.objects.filter(email=email).exists()
-
-        if user:
+    def validate_email(self, email):
+        if User.objects.filter(email=email).exists():
             raise serializers.ValidationError(_('کاربری در گذشته با این ایمیل ثبت نام کرده است!!!'))
-        return user
+        return email
     
 
     def validate(self, attrs):
@@ -49,12 +42,13 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
         if password != confirm_password:
             raise serializers.ValidationError(_('کلمه عبور و تکرار آن باید یکسان باشد!!!'))
-        return password
+        return attrs
     
 
     def create(self, validated_data):
         del validated_data['confirm_password']
-        return User.objects.create_user(**validated_data)
+        with transaction.atomic():
+            return User.objects.create_user(**validated_data)
     
 
 class PasswordResetRequestSerializers(serializers.Serializer):

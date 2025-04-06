@@ -3,41 +3,101 @@ from .models import *
 
 
 
-class CommentSerializer(serializers.ModelSerializer):
-	blog = serializers.CharField(source='blog.title')
+class ReplyListSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.full_name')
 
-	class Meta:
-		model = CommentBlog
-		fields = "__all__"
+    class Meta:
+        model = CommentBlog
+        fields = ['id', 'body', 'create_at', 'user']
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    product = serializers.CharField(source='product.title')
+    user = serializers.CharField(source='user.full_name')
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CommentBlog
+        fields = ['id', 'body', 'create_at', 'user', 'product', 'replies']
+
+    def get_replies(self, obj):
+        replies = obj.repliess.all()
+        return ReplyListSerializer(replies, many=True).data
+	
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentBlog
+        fields = ['body']
+
+
+class ReplyCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentBlog
+        fields = ['body']
+
+
+class CommentUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentBlog
+        fields = ['body']
+
+
+class ReplyUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentBlog
+        fields = ['body']
+
 
 
 class CreateCommentSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CommentBlog
-		fields = ['body']
-		
-	def create(self, validated_data):
-		blog = Blog.objects.get(slug=self.context['blog_slug'])
-		return CommentBlog.objects.create(blog=blog, **validated_data)
+		fields = ['body', 'reply']
 
 
-class CategoryBlogSerializers(serializers.ModelSerializer):
+class ListRetriveCategoryBlogSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CategoryBlog
 		fields = '__all__'
+            
+
+class CreateCategoryBlogSerializer(serializers.ModelSerializer):
+      class Meta:
+        model = CategoryBlog
+        fields = '__all__'
 
 
-class BlogSerializer(serializers.ModelSerializer):
-	category = CategoryBlogSerializers(source='category.title')
-	comment_blog = CommentSerializer(many=True)
+class UpdateCategoryBlogSerializer(serializers.ModelSerializer):
+      class Meta:
+        model = CategoryBlog
+        fields = '__all__'
+
+
+class ListRetriveBlogSerializer(serializers.ModelSerializer):
+	category = ListRetriveCategoryBlogSerializer(source='category.title')
+	comment_blog = CommentListSerializer(many=True)
 
 	class Meta:
 		model = Blog
 		fields = ['title', 'slug', 'category', 'image', 'content', 'comment_blog', 'create_at', 'update_at']
 
+	def get_image(self, obj):
+		if isinstance(obj.image, Image):
+			return obj.image.image.url if obj.image.image else None
+		return None
 
-class EditBlogSerializer(serializers.ModelSerializer):
+
+
+class UpdateBlogSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Blog
 		fields = ['title', 'category', 'image', 'content']
+            
+
+class CreateBlogSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = Blog
+          fields = '__all__'
+
 		

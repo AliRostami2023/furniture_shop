@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "product.apps.ProductConfig",
     "home.apps.HomeConfig",
     "order.apps.OrderConfig",
+    "payment.apps.PaymentConfig",
     "core.apps.CoreConfig",
 
     "rest_framework",

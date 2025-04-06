@@ -3,25 +3,60 @@ from .models import *
 
 
 
-class CommentSerializer(serializers.ModelSerializer):
-	product = serializers.CharField(source='product.title')
+class ReplyListSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.full_name')
 
-	class Meta:
-		model = CommentProduct
-		fields = "__all__"
+    class Meta:
+        model = CommentProduct
+        fields = ['id', 'body', 'create_at', 'user']
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    product = serializers.CharField(source='product.title')
+    user = serializers.CharField(source='user.full_name')
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CommentProduct
+        fields = ['id', 'body', 'create_at', 'user', 'product', 'replies']
+
+    def get_replies(self, obj):
+        replies = obj.replies.all()
+        return ReplyListSerializer(replies, many=True).data
+	
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentProduct
+        fields = ['body']
+
+
+class ReplyCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentProduct
+        fields = ['body']
+
+
+class CommentUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentProduct
+        fields = ['body']
+
+
+class ReplyUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentProduct
+        fields = ['body']
+
 
 
 class CreateCommentSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CommentProduct
-		fields = ['body']
-		
-	def create(self, validated_data):
-		product = Product.objects.get(slug=self.context['product_slug'])
-		return CommentProduct.objects.create(product=product, **validated_data)
+		fields = ['body', 'reply']
 
 
-class CategoryProductSerializer(serializers.ModelSerializer):
+class ListRetriveCategoryProductSerializer(serializers.ModelSerializer):
 	image = serializers.SerializerMethodField()
 	
 	class Meta:
@@ -32,6 +67,18 @@ class CategoryProductSerializer(serializers.ModelSerializer):
 		if isinstance(obj.image, Image):
 			return obj.image.image.url if obj.image.image else None
 		return None
+      
+
+class CreateCategoryProductSerializer(serializers.ModelSerializer):
+      class Meta:
+        model = CategoryProduct
+        fields = '__all__'
+
+
+class UpdateCategoryProductSerializer(serializers.ModelSerializer):
+      class Meta:
+        model = CategoryProduct
+        fields = '__all__'
 
 
 class GalleryProductSerializer(serializers.ModelSerializer):
@@ -40,9 +87,9 @@ class GalleryProductSerializer(serializers.ModelSerializer):
 		fields = '__all__'
 
 
-class ProductSerializer(serializers.ModelSerializer):
-    category = CategoryProductSerializer()
-    comment_product = CommentSerializer(many=True)
+class ListRetriveProductSerializer(serializers.ModelSerializer):
+    category = ListRetriveCategoryProductSerializer()
+    comment_product = CommentListSerializer(many=True)
     final_price = serializers.IntegerField()
     product_image = GalleryProductSerializer(many=True)
     image = serializers.SerializerMethodField()
@@ -61,12 +108,16 @@ class ProductSerializer(serializers.ModelSerializer):
         return None
 
 
+class CreateProductSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = Product
+          fields = '__all__'
 
-class EditProductSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = Product
-		fields = ['id', 'title', 'category', 'price', 'image', 'discount', 'width', 'lenght',
-					 'weight', 'color', 'meterial']
+
+class UpdateProductSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = Product
+          fields = '__all__'
 
 
 

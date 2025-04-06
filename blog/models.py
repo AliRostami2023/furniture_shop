@@ -51,7 +51,7 @@ class CommentBlog(CreateMixin):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment_user_blog', verbose_name=_('کاربر'))
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='comment_blog', verbose_name=_('lrhgi'))
     body = models.TextField(_('متن دیدگاه'))
-    reply = models.ForeignKey('self', on_delete=models.CASCADE, related_name='repliess', verbose_name=_('پاسخ'))
+    reply = models.ForeignKey('self', on_delete=models.CASCADE, related_name='repliess', null=True, blank=True, verbose_name=_('پاسخ'))
 
     def __str__(self):
         return self.user.full_name

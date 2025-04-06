@@ -21,14 +21,6 @@ class Order(models.Model):
     total_price = models.IntegerField(default=0, verbose_name=_('قیمت کل سفارش'))
     payment_date = models.DateTimeField(_('تاریخ پرداخت'), null=True, blank=True)
     is_paid = models.BooleanField(default=False, verbose_name=_('پرداخت شده؟'))
-    first_name = models.CharField(max_length=100, verbose_name=_('نام'))
-    last_name = models.CharField(max_length=100, verbose_name=_('نام خانوادگی'))
-    email = models.EmailField(max_length=150, null=True, blank=True, verbose_name=_('ایمیل(اختیاری)'))
-    phone_number = models.CharField(max_length=11, verbose_name=_('شماره تلفن'))
-    state = models.CharField(max_length=100, verbose_name=_('استان'))
-    city = models.CharField(max_length=100, verbose_name=_('شهر'))
-    zip_code = models.CharField(max_length=20, verbose_name=_('کد پستی'))
-    address = models.CharField(max_length=300, verbose_name=_('آدرس'))
 
     def __str__(self):
         return f"{self.user.full_name} - {self.status}"

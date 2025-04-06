@@ -1,88 +1,114 @@
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from rest_framework import viewsets, permissions
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, generics
 from .paginations import BlogPagination, CommentBlogPagination
 from .models import *
 from .serializers import *
 
 
-class CategoryBlogViewSet(viewsets.ModelViewSet):
+class ListCategoryBlogAPIView(generics.ListAPIView):
     queryset = CategoryBlog.objects.all()
-    serializer_class = CategoryBlogSerializers
-    permissions_classes = [permissions.IsAdminUser]
+    serializer_class = ListRetriveCategoryBlogSerializer
+
+
+class RetriveCategoryBlogAPIView(generics.RetrieveAPIView):
+    queryset = CategoryBlog.objects.all()
+    serializer_class = ListRetriveCategoryBlogSerializer
     lookup_field = 'slug'
 
-    def get_permission(self):
-        if self.request.method == "GET":
-            return [permissions.AllowAny()]
-        return super().get_permissions()
-    
-    @method_decorator(cache_page(60 * 30))
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-    
-    @method_decorator(cache_page(60 * 30))
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+
+class CreateCategoryBlogAPIView(generics.CreateAPIView):
+    queryset = CategoryBlog.objects.all()
+    serializer_class = CreateCategoryBlogSerializer
+    permission_classes = [permissions.IsAdminUser]
 
 
-class BlogViewSet(viewsets.ModelViewSet):
+class UpdateCategoryBlogAPIView(generics.UpdateAPIView, generics.DestroyAPIView):
+    queryset = CategoryBlog.objects.all()
+    serializer_class = UpdateCategoryBlogSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+
+
+class ListBlogAPIView(generics.ListAPIView,):
     queryset = Blog.objects.select_related('category', 'image')
-    serializer_class = EditBlogSerializer
+    serializer_class = ListRetriveBlogSerializer
     permissions_classes = [permissions.IsAdminUser]
     pagination_class = BlogPagination
     lookup_field = 'slug'
 
-    def get_permission(self):
-        if self.request.method == "GET":
-            return [permissions.AllowAny()]
-        return super().get_permissions()
 
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return BlogSerializer
-        return super().get_serializer_class()
+class RetriveBlogAPIView(generics.RetrieveAPIView):
+    queryset = Blog.objects.select_related('category', 'image')
+    serializer_class = ListRetriveBlogSerializer
+    lookup_field = 'slug'
+
+
+class CreateBlogAPIView(generics.CreateAPIView):
+    queryset = Blog.objects.select_related('category', 'image')
+    serializer_class = CreateBlogSerializer
+    permission_classes = [permissions.IsAdminUser]
     
 
-    @method_decorator(cache_page(60 * 30))
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-    
-    @method_decorator(cache_page(60 * 30))
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+
+class UpdateBlogAPIView(generics.UpdateAPIView, generics.DestroyAPIView):
+    queryset = Blog.objects.select_related('category', 'image')
+    serializer_class = UpdateBlogSerializer
+    permission_classes = [permissions.IsAdminUser]
 
 
-class CommentBlogViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
-    permissions_classes = [permissions.IsAdminUser]
+class CommentBlogListAPIView(generics.ListAPIView):
+    serializer_class = CommentListSerializer
     pagination_class = CommentBlogPagination
 
+    def get_queryset(self):
+        return CommentBlog.objects.filter(
+            blog__slug=self.kwargs['blog_slug'],
+            reply=None
+        ).select_related('user', 'blog', 'reply')
+
+
+class CommentBlogCreateAPIView(generics.CreateAPIView):
+    serializer_class = CreateCommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        blog = get_object_or_404(Blog, slug=self.kwargs['blog_slug'])
+        serializer.save(user=self.request.user, blog=blog)
 
-    def get_serializer_context(self):
-        return {"blog_slug": self.kwargs['blog_slug'], "request": self.request}
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateCommentSerializer
-        return super().get_serializer_class()
+class BlogReplyCreateAPIView(generics.CreateAPIView):
+    serializer_class = ReplyCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get_permissions(self):
-        if self.request.method in ["GET", "POST"]:
-            return [permissions.IsAuthenticated()]
-        return super().get_permissions()
+    def perform_create(self, serializer):
+        blog = get_object_or_404(Blog, slug=self.kwargs['blog_slug'])
+        parent_comment = get_object_or_404(CommentBlog, pk=self.kwargs['comment_id'])
+
+        if parent_comment.reply is not None:
+            raise serializers.ValidationError("ریپلای روی ریپلای مجاز نیست.")
+
+        serializer.save(user=self.request.user, blog=blog, reply=parent_comment)
+
+
+class CommentBlogUpdateDeleteAPIView(generics.UpdateAPIView, generics.DestroyAPIView):
+    serializer_class = CommentUpdateSerializer
+    permission_classes = [permissions.IsAdminUser]
+    lookup_field = 'pk'
 
     def get_queryset(self):
-        return CommentBlog.objects.filter(blog__slug=self.kwargs['blog_slug']).select_related('user', 'blog', 'reply')
+        return CommentBlog.objects.filter(
+            blog__slug=self.kwargs['blog_slug'],
+            reply=None
+        )
 
 
-    @method_decorator(cache_page(60 * 30))
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-    
-    @method_decorator(cache_page(60 * 30))
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+class BlogReplyUpdateDeleteAPIView(generics.UpdateAPIView, generics.DestroyAPIView):
+    serializer_class = ReplyUpdateSerializer
+    permission_classes = [permissions.IsAdminUser]
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        return CommentBlog.objects.filter(
+            blog__slug=self.kwargs['blog_slug']
+        ).exclude(reply=None)
     
