@@ -115,6 +115,7 @@ class InformationShop(models.Model):
     whatsapp = models.URLField(_('واتساپ'), null=True, blank=True)
     email = models.URLField(_('ایمیل'), null=True, blank=True)
     phone_number = models.CharField(max_length=11, verbose_name=_('شماره تلفن'))
+    phone = models.CharField(max_length=11, null=True, blank=True, verbose_name=_('تلفن ثابت'))
     address = models.CharField(_('آدرس'), max_length=500)
 
     def __str__(self):

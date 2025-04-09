@@ -88,7 +88,6 @@ class ListRetriveBlogSerializer(serializers.ModelSerializer):
 		return None
 
 
-
 class UpdateBlogSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Blog

@@ -103,3 +103,8 @@ class ProductFavorite(CreateMixin):
 
     def __str__(self):
         return f"{self.product.title[:7]} - {self.user.full_name}"
+    
+
+    class Meta:
+        verbose_name = _('محصول مورد علاقه')
+        verbose_name_plural = _(' محصولات مورد علاقه کاربران')
