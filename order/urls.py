@@ -1,15 +1,15 @@
 from django.urls import path
-from .views import AddToCartView, RemoveFromCartView, UserOrderListView, \
-                     AdminOrderListView, PendingCartView, ClearCartView
+from . import views
 
 
 app_name = 'order'
 
 urlpatterns = [
-    path('', PendingCartView.as_view(), name='pending-cart'),
-    path('add-to-cart/<int:product_id>/', AddToCartView.as_view(), name='add-to-cart'),
-    path('remove-from-cart/<int:id>/', RemoveFromCartView.as_view(), name='remove-from-cart'),
-    path('remove-cart/', ClearCartView.as_view(), name='remove-cart'),
-    path('user-orders/', UserOrderListView.as_view(), name='user-orders'),
-    path('admin-orders/', AdminOrderListView.as_view(), name='admin-orders'),
+    path('', views.PendingCartView.as_view(), name='pending-cart'),
+    path('add-to-cart/<int:product_id>/', views.AddToCartView.as_view(), name='add-to-cart'),
+    path('update-cart-item/<int:pk>/', views.UpdateCartItemQuantityView.as_view(), name='update-cart-item'),
+    path('remove-from-cart/<int:pk>/', views.RemoveFromCartView.as_view(), name='remove-from-cart'),
+    path('remove-cart/', views.ClearCartView.as_view(), name='remove-cart'),
+    path('user-orders/', views.UserOrderListView.as_view(), name='user-orders'),
+    path('admin-orders/', views.AdminOrderListView.as_view(), name='admin-orders'),
 ]

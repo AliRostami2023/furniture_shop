@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from product.models import Product
 from .models import OrderItem, Order
-from .serializers import OrderItemSerializer, OrderSerializer
+from .serializers import OrderItemSerializer, OrderSerializer, UpdateCartItemQuantityView
 
 
 
@@ -27,28 +27,78 @@ class AddToCartView(generics.CreateAPIView):
     lookup_field = 'id'
 
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, product_id):
         try:
-            product = Product.objects.get(id=kwargs['product_id'])
+            product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
-            return Response({"detail": _("محصول یافت نشد.")}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "محصول یافت نشد."}, status=status.HTTP_404_NOT_FOUND)
 
-        mutable_data = request.data.copy()
-        mutable_data['product'] = product.id
+        quantity = int(request.data.get('quantity', 1))
+        user = request.user
 
-        serializer = self.get_serializer(data=mutable_data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        with transaction.atomic():
+            order, created = Order.objects.get_or_create(
+                user=user,
+                status=Order.StatusOrder.pending,
+                defaults={'total_price': 0}
+            )
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+            order_item, _ = OrderItem.objects.get_or_create(
+                order=order,
+                product=product,
+                defaults={
+                    'price': product.final_price(),
+                    'quantity': quantity
+                }
+            )
+
+            if not _:
+                order_item.quantity += quantity
+                order_item.save()
+            else:
+                order_item.save()
+
+            order.total_price += product.final_price() * quantity
+            order.save()
+
+            serializer = OrderItemSerializer(order_item)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+
+
+class UpdateCartItemQuantityView(generics.UpdateAPIView):
+    queryset = OrderItem.objects.prefetch_related('product', 'order')
+    permission_classes = [IsAuthenticated]
+    serializer_class = UpdateCartItemQuantityView
+
+
+    def patch(self, request, pk):
+        try:
+            order_item = OrderItem.objects.prefetch_related('order', 'product').get(id=pk, order__user=request.user, order__status=Order.StatusOrder.pending)
+        except OrderItem.DoesNotExist:
+            return Response({"detail": "آیتم مورد نظر در سبد خرید یافت نشد."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            new_quantity = int(request.data.get('quantity'))
+            if new_quantity < 1:
+                return Response({"detail": "تعداد باید حداقل ۱ باشد."}, status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError):
+            return Response({"detail": "تعداد معتبر وارد نشده است."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            order_item.quantity = new_quantity
+            order_item.save()
+            order_item.order.update_total_price()
+
+            serializer = OrderItemSerializer(order_item)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RemoveFromCartView(generics.DestroyAPIView):
     serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated]
     queryset = OrderItem.objects.select_related('product', 'order')
-    lookup_field = 'id'
+    lookup_field = 'pk'
 
     def perform_destroy(self, instance):
         order = instance.order

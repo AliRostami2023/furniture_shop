@@ -26,14 +26,24 @@ class Order(models.Model):
         return f"{self.user.full_name} - {self.status}"
 
     def get_total_price(self):
-        total = self.order_item.aggregate(total_price=models.Sum(models.F('price') * models.F('quantity')))['total_price']
-        return total
+        total = self.order_item.aggregate(total_price=models.Sum(models.F(
+                            'price') * models.F('quantity')))['total_price']
+        return total or 0
 
     def save(self, *args, **kwargs):
         self.total_price = self.get_total_price()
         if self.total_price is None:
             self.total_price = 0
         super().save(*args, **kwargs)
+
+
+    def update_total_price(self):
+        self.total_price = sum(
+            item.quantity * item.product.final_price()
+            for item in self.order_item.all()
+        )
+        self.save()
+
 
     class Meta:
         verbose_name = _('سفارش')
@@ -48,7 +58,11 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.order} - {self.product}"
-
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.order.update_total_price()
+    
     class Meta:
         verbose_name = _('جزییات سفارش')
         verbose_name_plural = _('جزییات سفارشات')
