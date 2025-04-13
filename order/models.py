@@ -40,7 +40,7 @@ class Order(models.Model):
     def update_total_price(self):
         self.total_price = sum(
             item.quantity * item.product.final_price()
-            for item in self.order_item.all()
+            for item in OrderItem.objects.filter(order=self)
         )
         self.save()
 

@@ -2,6 +2,21 @@ from rest_framework import serializers
 from .models import *
 
 
+class UserSimpleSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['full_name', 'avatar']
+
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        profile = getattr(obj, 'profile', None)
+        if profile and profile.avatar:
+            return request.build_absolute_uri(profile.avatar.url) if request else profile.avatar.url
+        return None
+
+
 
 class ReplyListSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.full_name')
@@ -13,14 +28,14 @@ class ReplyListSerializer(serializers.ModelSerializer):
 
 class CommentListSerializer(serializers.ModelSerializer):
     product = serializers.CharField(source='product.title')
-    user = serializers.CharField(source='user.full_name')
-    replies = serializers.SerializerMethodField()
+    user = UserSimpleSerializer()
+    reply = serializers.SerializerMethodField(method_name='get_reply')
 
     class Meta:
         model = CommentProduct
-        fields = ['id', 'body', 'create_at', 'user', 'product', 'replies']
+        fields = ['id', 'body', 'create_at', 'user', 'product', 'reply']
 
-    def get_replies(self, obj):
+    def get_reply(self, obj):
         replies = obj.replies.all()
         return ReplyListSerializer(replies, many=True).data
 	
@@ -47,13 +62,6 @@ class ReplyUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentProduct
         fields = ['body']
-
-
-
-class CreateCommentSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = CommentProduct
-		fields = ['body', 'reply']
 
 
 class ListRetriveCategoryProductSerializer(serializers.ModelSerializer):

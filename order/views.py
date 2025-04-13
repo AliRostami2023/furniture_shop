@@ -43,7 +43,7 @@ class AddToCartView(generics.CreateAPIView):
                 defaults={'total_price': 0}
             )
 
-            order_item, _ = OrderItem.objects.get_or_create(
+            order_item, created = OrderItem.objects.get_or_create(
                 order=order,
                 product=product,
                 defaults={
@@ -52,7 +52,7 @@ class AddToCartView(generics.CreateAPIView):
                 }
             )
 
-            if not _:
+            if not created:
                 order_item.quantity += quantity
                 order_item.save()
             else:
@@ -106,6 +106,8 @@ class RemoveFromCartView(generics.DestroyAPIView):
 
         if not order.order_item.exists():
             order.delete()
+        else:
+            order.update_total_price()
 
 
     def destroy(self, request, *args, **kwargs):

@@ -19,6 +19,13 @@ class UserAdmin(admin.ModelAdmin):
     inlines = [ProfileInline]
 
 
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'brithday', 'address', 'about_me']
+    search_fields = ['user', 'addres', 'about_me']
+    list_per_page = 20
+
+
 @admin.register(PasswordResetToken)
 class PasswordReset(admin.ModelAdmin):
     list_display = ['user', 'token', 'is_used']

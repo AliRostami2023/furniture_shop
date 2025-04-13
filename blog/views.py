@@ -68,7 +68,7 @@ class CommentBlogListAPIView(generics.ListAPIView):
 
 
 class CommentBlogCreateAPIView(generics.CreateAPIView):
-    serializer_class = CreateCommentSerializer
+    serializer_class = CommentCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
