@@ -19,7 +19,7 @@ class UserSimpleSerializer(serializers.ModelSerializer):
 
 
 class ReplyListSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.full_name')
+    user = UserSimpleSerializer()
 
     class Meta:
         model = CommentProduct
@@ -37,7 +37,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
     def get_reply(self, obj):
         replies = obj.replies.all()
-        return ReplyListSerializer(replies, many=True).data
+        return ReplyListSerializer(replies, many=True, context=self.context).data
 	
 
 class CommentCreateSerializer(serializers.ModelSerializer):

@@ -1,8 +1,5 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.core.mail import send_mail
-from django.urls import reverse_lazy
 from rest_framework import serializers
 from .models import PasswordResetToken, Profile
 
@@ -45,45 +42,19 @@ class CreateUserSerializer(serializers.ModelSerializer):
         return attrs
     
 
-    def create(self, validated_data):
-        del validated_data['confirm_password']
-        with transaction.atomic():
-            return User.objects.create_user(**validated_data)
-    
-
 class PasswordResetRequestSerializers(serializers.Serializer):
     email = serializers.EmailField()
 
 
     def validate_email(self, value):
-        try:
-            User.objects.get(email=value)
-        except User.DoesNotExist:
+        email = value.lower().strip()
+        if not User.objects.filter(email=email).exists():
             raise serializers.ValidationError(_('کاربری با این ایمیل وجود ندارد !!!'))
-        return value
-    
-
-    def create(self, validated_data):
-        user = User.objects.get(email=validated_data['email'])
-        reset_token = PasswordResetToken.objects.create(user=user)
-
-        reset_link = f"{self.context['request'].build_absolute_uri(reverse_lazy('auth:password-reset', kwargs={'token':str(reset_token.token)}))}"
-
-        send_mail(
-            subject= _('درخواست تغییر کلمه عبور'),
-            message= _(f".برای تغییر کلمه عبور روی لینک زیر کلیک کنید {reset_link}"),
-            from_email= 'example@gmail.com',
-            recipient_list= [user.email],
-            fail_silently= False
-        )
-
-        print(reset_link)
-        return reset_token
+        return email
 
 
 
 class PasswordResetConfirmSerializers(serializers.Serializer):
-    token = serializers.UUIDField()
     new_password = serializers.CharField(write_only=True)
     confirm_new_password = serializers.CharField(write_only=True)
 
@@ -109,15 +80,6 @@ class PasswordResetConfirmSerializers(serializers.Serializer):
         return value
 
 
-    def save(self, **kwargs):
-        reset_token = PasswordResetToken.objects.get(token=self.validated_data['token'])
-        user = reset_token.user
-        user.set_password(self.validated_data['new_password'])
-        user.save()
-        reset_token.is_used = True
-        reset_token.save()
-
-
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -130,24 +92,25 @@ class UserListSerializer(serializers.ModelSerializer):
         }
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileListSerializer(serializers.ModelSerializer):
     user = UserListSerializer()
 
     class Meta:
         model = Profile
         fields = ['user', 'avatar', 'brithday', 'address', 'about_me']
 
-    def update(self, instance, validated_data):
-        user_data = validated_data.pop('user', None)
 
-        instance.avatar = validated_data.get('avatar', instance.avatar)
-        instance.birthday = validated_data.get('brithday', instance.brithday)
-        instance.address = validated_data.get('address', instance.address)
-        instance.about_me = validated_data.get('about_me', instance.about_me)
-        instance.save()
+class ProfileDetailSerializer(serializers.ModelSerializer):
+    user = UserListSerializer()
 
-        if user_data:
-            user_serializer = UserListSerializer(instance.user, data=user_data, partial=True)
-            if user_serializer.is_valid():
-                user_serializer.save()
-        return instance
+    class Meta:
+        model = Profile
+        fields = ['user', 'avatar', 'brithday', 'address', 'about_me']
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    user = UserListSerializer()
+
+    class Meta:
+        model = Profile
+        fields = ['user', 'avatar', 'brithday', 'address', 'about_me']
