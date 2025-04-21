@@ -33,7 +33,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CommentProduct
-        fields = ['id', 'body', 'create_at', 'user', 'product', 'reply']
+        fields = ['id', 'body', 'create_at', 'user', 'product', 'reply', 'rating']
 
     def get_reply(self, obj):
         replies = obj.replies.all()
@@ -43,7 +43,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentProduct
-        fields = ['body']
+        fields = ['body', 'rating']
 
 
 class ReplyCreateSerializer(serializers.ModelSerializer):
@@ -100,20 +100,24 @@ class ListRetriveProductSerializer(serializers.ModelSerializer):
     comment_product = CommentListSerializer(many=True)
     final_price = serializers.IntegerField()
     product_image = GalleryProductSerializer(many=True)
-    image = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField(method_name='get_image')
+    average_rating = serializers.SerializerMethodField(method_name='get_average_rating')
 
     class Meta:
         model = Product
         fields = [
             'id', 'title', 'slug', 'category', 'final_price', 'price', 'discount', 'image',
-            'product_image', 'rating', 'width', 'lenght', 'weight', 'color',
-            'meterial', 'comment_product', 'create_at', 'update_at'
+            'product_image', 'width', 'lenght', 'weight', 'color',
+            'meterial', 'comment_product', 'create_at', 'update_at', 'average_rating'
         ]
 
     def get_image(self, obj):
         if isinstance(obj.image, Image):
             return obj.image.image.url if obj.image.image else None
         return None
+    
+    def get_average_rating(self, obj):
+        return obj.average_rating()
 
 
 class CreateProductSerializer(serializers.ModelSerializer):

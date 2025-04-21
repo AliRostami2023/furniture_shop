@@ -35,7 +35,6 @@ class Product(CreateMixin, UpdateMixin):
     price = models.PositiveIntegerField(_('قیمت محصول'))
     image = models.ForeignKey(Image, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_('تصویر محصول'))
     discount = models.PositiveSmallIntegerField(default=0, verbose_name=_('درصد تخفیف'))
-    rating = models.PositiveSmallIntegerField(_('امتیاز'), validators=[MinValueValidator(1), MaxValueValidator(5)], default=0)
     width = models.CharField(max_length=20, verbose_name=_('عرض(سانتی متر)'))
     lenght = models.CharField(max_length=20, verbose_name=_('ارتفاع(سانتی متر)'))
     weight = models.CharField(max_length=20, verbose_name=_('وزن(سانتی متر)'))
@@ -58,6 +57,15 @@ class Product(CreateMixin, UpdateMixin):
             total = (self.discount * self.price) / 100
             return int(self.price - total)
         return self.price
+    
+
+    def average_rating(self):
+        comments = self.comment_product.all()
+        if comments.exists():
+            valid_ratings = comments.exclude(rating=0).values_list('rating', flat=True)
+            if valid_ratings:
+                return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return 0
     
     class Meta:
         verbose_name = 'محصول'
@@ -85,6 +93,7 @@ class CommentProduct(CreateMixin):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment_user', verbose_name=_('کاربر'))
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='comment_product', verbose_name=_('محصول'))
     body = models.TextField(_('متن دیدگاه'))
+    rating = models.PositiveSmallIntegerField(_('امتیاز'), null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)], default=0)
     reply = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies', verbose_name=_('پاسخ'))
 
     def __str__(self):

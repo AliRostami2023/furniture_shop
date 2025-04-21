@@ -87,11 +87,22 @@ class CommentListAPIView(generics.ListAPIView):
 
 
 class CommentCreateAPIView(generics.CreateAPIView):
+    queryset = CommentProduct.objects.select_related('user', 'product', 'reply')
     serializer_class = CommentCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         product = get_object_or_404(Product, slug=self.kwargs['product_slug'])
+
+        if 'rating' in serializer.validated_data and serializer.validated_data['rating'] > 0:
+            existing_rating = CommentProduct.objects.filter(
+                user=self.request.user,
+                product=product,
+                rating__gt=0
+            ).exists()
+
+            if existing_rating:
+                raise serializers.ValidationError(_('شما قبلا برای این محصول امتیاز ثبت کرده اید!'))
         serializer.save(user=self.request.user, product=product)
 
 
