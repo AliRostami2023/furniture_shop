@@ -27,6 +27,7 @@ urlpatterns = [
     path("blog/", include('blog.urls', namespace='blog')),
     path("auth/", include('account.urls', namespace='auth')),
     path("cart/", include('order.urls', namespace='order')),
+    path("pay/", include('payment.urls', namespace='payment')),
     
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
