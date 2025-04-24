@@ -1,0 +1,49 @@
+services:
+
+  project:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: furniture_shop
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - "8000:8000"
+    networks:
+      - main
+    volumes:
+      - .:/home/app
+    environment:
+      - DEBUG=${DEBUG}
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_DB}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DJANGO_SUPERUSER_FULL_NAME=${DJANGO_SUPERUSER_FULL_NAME}
+      - DJANGO_SUPERUSER_PHONE_NUMBER=${DJANGO_SUPERUSER_PHONE_NUMBER}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+
+  postgres:
+    image: postgres:13
+    container_name: postgres_db
+    restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      - main
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DATABASE_DB}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+
+networks:
+  main:
+
+volumes:
+  postgres_data:
