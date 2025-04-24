@@ -6,8 +6,12 @@ class CheckoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Checkout
         fields = [
-            'first_name', 'last_name', 'email', 'phone_number', 
+            'order', 'user', 'first_name', 'last_name', 'email', 'phone_number', 
             'state', 'city', 'zip_code', 'address'
         ]
 
+        extra_fields = {
+            'order': {'read_only': True},
+            'user': {'read_only': True},
+        }
         

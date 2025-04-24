@@ -1,8 +1,9 @@
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from rest_framework import generics, permissions, serializers
-from .models import Checkout
 from order.models import Order
+from .models import Checkout
 from .serializers import CheckoutSerializer
 
 
@@ -27,4 +28,10 @@ class CheckoutAPIView(generics.CreateAPIView):
         
         checkout = serializer.save(user=user, order=order)
 
+        order.status = Order.StatusOrder.complete
+        order.is_paid = True
+        order.payment_date = timezone.now()
+        order.save()
+
         return checkout
+    
