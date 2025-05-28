@@ -40,8 +40,8 @@ Frontend: React.js
 
 ## نصب و راه‌اندازی
 
-git clone https://github.com/yourusername/furniture-store.git
-cd furniture-store
+git clone https://github.com/AliRostami2023/furniture_shop
+cd furniture_shop
 
 python -m venv env
 source env/bin/activate   # برای لینوکس/مک
